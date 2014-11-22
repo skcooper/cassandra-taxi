@@ -16,11 +16,12 @@ session.execute("CREATE TABLE IF NOT EXISTS %s(id uuid, property text, value tex
 
 session.execute("CREATE INDEX IF NOT EXISTS on %s(value);"%table_name)
 
-session.execute("CREATE TABLE IF NOT EXISTS %s(id uuid, name text, car text, phone text, rate text, rides list<uuid>, primary key(id));"%driver_table_name)
+#Normally, id would be of type uuid, but with only one driver currently it is text
+session.execute("CREATE TABLE IF NOT EXISTS %s(id text, name text, car text, phone text, rate text, rides list<uuid>, primary key(id));"%driver_table_name)
 
 #Add first (and so far, only) driver
-driver_id = uuid.uuid4()
-session.execute("INSERT INTO "+driver_table_name+"(id, name, car, phone, rate) values("+str(driver_id)+", 'driver1', 'car1', '800-800-8001', '20')")
+driver_id = 'id'
+session.execute("INSERT INTO "+driver_table_name+"(id, name, car, phone, rate) values('id', 'driver1', 'car1', '800-800-8001', '20')")
 
 #Homepage
 @app.route('/')
@@ -163,34 +164,49 @@ def unclaimed_rides():
 
 @app.route('/claim/<id>/', methods=['GET', 'POST'])
 def claim(id):	
+	already_claimed = True
 	id = uuid.UUID(id)
 	# Claimed if has driver_name attribute
 	if request.method == 'POST' :
-		session.execute("INSERT INTO "+table_name+"(id, property, value) values(%s, 'driver_id', %s)", (str(id), str(driver_id))
-		session.execute("INSERT INTO "+table_name+"(id, property, value) values(%s, 'driver_name', %s)", (str(id), 'placeholder'))
+		#Wrap up in transaction
+			#Add driver info to rider
+			session.execute("INSERT INTO "+table_name+"(id, property, value) values(%s, 'driver_id', %s)", (id, str(driver_id)))
+			session.execute("INSERT INTO "+table_name+"(id, property, value) values(%s, 'driver_name', %s)", (id, 'placeholder'))
+
+			###Possible pause location
+
+			#Add rider info to driver
+			session.execute("UPDATE "+driver_table_name+" SET rides = rides + [%s] WHERE id = %s;", (id, str(driver_id)))
+
 		# for key, value in request.form.iteritems() :
 		# 	# #Only worried about new fields
 		# 	session.execute("INSERT INTO "+table_name+"(id, property, value) values("+str(id)+", %s, %s)", (key, value))
 		# 	# session.execute("UPDATE " + table_name + " SET value = %s WHERE id = %s AND property = %s", (value, id, key))
+
+	unclaimed_select_results = session.execute("SELECT id FROM " + table_name + " WHERE id = %s and property = %s", (id, 'driver_name'))
+	if len(unclaimed_select_results) == 0 :
+		already_claimed = False
+
 	result = {}
 	all_properties = session.execute("SELECT property, value FROM "+table_name+" WHERE id = %s", (id,)) 
 	for property in all_properties:
 		result[property.property] = property.value
-	return render_template('claim.html', result = result, id = id)
+	return render_template('claim.html', result = result, id = id, already_claimed=already_claimed)
 
 
-def convert_to_dict(iterable, *fields):
-	outer_dict = {}
-	outer_key = 0
-	for element in iterable:
-		inner_dict = {}
-		for field in fields:
-			inner_dict[field] = getattr(element, field)
-		outer_dict[outer_key]= inner_dict
-		outer_key += 1
-	return outer_dict
+@app.route('/drivers/', methods=['GET', 'POST'])
+def drivers(): 
+	select_results = session.execute("SELECT * FROM "+driver_table_name)
+	results = {}
+	for row in select_results:
+		results[str(row.id)] = {'name': row.name, 'car': row.car, 'phone':row.phone, 'rate':row.rate, 'rides':row.rides}
 
+	# ride_names = {}
+	# ride_select_results = session.execute("SELECT id, value FROM "+table_name+" WHERE property = 'name' ALLOW FILTERING")
+	# for row in ride_select_results:
+	# 	ride_names[str(row.id)] = row.value
 
+	return render_template('drivers.html', result = results)#, ride_names = ride_names)
 
 
 if __name__ == '__main__':

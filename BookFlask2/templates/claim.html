@@ -62,23 +62,25 @@
       <!-- Example row of columns -->
       <div class="row">
       	<div class="col-md-6">
+        	<h1><b>User Information:</b></h1>
+        	{% set count = 1 %}
+        	{% for attr, value in result.iteritems() %}
+        		{% if attr != 'title' and attr != 'author'and attr != 'image' and attr != 'image_src' and attr != '_id' %}
+        		<h3><b>{{attr}}</b>: {{value}}</h2>
+        		{% endif %}	
+
+        	{% endfor %}
+
           {% if already_claimed %}
             <h1>Ride already claimed</h1>
           {% else %}
-          	<h1><b>User Information:</b></h1>
-          	{% set count = 1 %}
-          	{% for attr, value in result.iteritems() %}
-          		{% if attr != 'title' and attr != 'author'and attr != 'image' and attr != 'image_src' and attr != '_id' %}
-          		<h3><b>{{attr}}</b>: {{value}}</h2>
-          		{% endif %}	
-
-          	{% endfor %}
-
 
             <!-- <a href = "/claim/{{id}}/"><button class="btn btn-primary btn-lg" type="submit">Claim Ride</button></a> -->
             <form method="post" class="form" action="/claim/{{id}}/">
               <input type="submit" value="Claim Ride">
             </form>
+          
+          {% endif %}
 <!-- 
             <h1><b>Driver Information:</b></h1>
             <form method="post" class="form" action="/claim/{{id}}/">
@@ -91,8 +93,6 @@
             <form method="post" class="form" action="/cancel_claim/{{result['name']}}/">
              <input type="submit" value="Cancel">
             </form> -->
-          
-          {% endif %}
 
       </div>
       </div>
