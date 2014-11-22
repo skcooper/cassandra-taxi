@@ -15,6 +15,8 @@ session.execute("CREATE TABLE IF NOT EXISTS %s(id uuid, property text, value tex
 
 session.execute("CREATE INDEX IF NOT EXISTS on %s(value);"%table_name)
 
+# Add single driver: has name and array of 
+
 #Homepage
 @app.route('/')
 def splash():
@@ -159,8 +161,9 @@ def claim(id):
 	# Claimed if has driver_name attribute
 	if request.method == 'POST' :
 		for key, value in request.form.iteritems() :
-			#Only worried about new fields
-			session.execute("UPDATE " + table_name + " SET value = %s WHERE id = %s AND property = %s", (value, id, key))
+			# #Only worried about new fields
+			session.execute("INSERT INTO "+table_name+"(id, property, value) values("+str(id)+", %s, %s)", (key, value))
+			# session.execute("UPDATE " + table_name + " SET value = %s WHERE id = %s AND property = %s", (value, id, key))
 	result = {}
 	all_properties = session.execute("SELECT property, value FROM "+table_name+" WHERE id = %s", (id,)) 
 	for property in all_properties:
