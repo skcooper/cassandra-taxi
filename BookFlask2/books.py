@@ -59,30 +59,56 @@ def search():
 
 		phone_ids = session.execute(id_select_statement, ('phone', query))
 
+		driver_name_ids = session.execute(id_select_statement, ('driver_name', query))
+
 		value_select_statement = "SELECT value FROM "+table_name+" WHERE id = %s and property = %s LIMIT 1 ALLOW FILTERING"
 
 		# Creates dict of attributes for certain id
-		user_name_dict = {}
+		results_dict = {}
 		for row in user_name_ids:
 			id = row.id
 			user_name = session.execute(value_select_statement, (id, 'name'))[0]
-			# dest_name = session.execute(value_select_statement, (id, 'destination'))[0]  
-			inner_dict = {'name': user_name.value}#, 'destination': dest_name.value}
-			user_name_dict[str(id)] = inner_dict
+			# dest = session.execute(value_select_statement, (id, 'destination'))[0]
+			# pickup = session.execute(value_select_statement, (id, 'pickup'))[0]
+			inner_dict = {'name': user_name.value, }#'pickup': pickup.value, 'destination': dest.value}perty
+			results_dict[str(id)] = inner_dict
 
-		# dest_dict = {}
-		# for row in name_ids:
-		# 	id = row.id
-		# 	user_name = session.execute(value_select_statement, (id, 'name'))[0]
-		# 	# dest_name = session.execute(value_select_statement, (id, 'destination'))[0]  
-		# 	inner_dict = {'name': user_name.value, 'destination': dest_name.value}
-		# 	user_name_dict[str(id)] = inner_dict
+		for row in pickup_ids:
+			id = row.id
+			user_name = session.execute(value_select_statement, (id, 'name'))[0]
+			# dest = session.execute(value_select_statement, (id, 'destination'))[0]
+			# pickup = session.execute(value_select_statement, (id, 'pickup'))[0]
+			inner_dict = {'name': user_name.value, }#'pickup': pickup.value, 'destination': dest.value}perty
+			results_dict[str(id)] = inner_dict
+
+		for row in dest_ids:
+			id = row.id
+			user_name = session.execute(value_select_statement, (id, 'name'))[0]
+			# dest = session.execute(value_select_statement, (id, 'destination'))[0]
+			# pickup = session.execute(value_select_statement, (id, 'pickup'))[0]
+			inner_dict = {'name': user_name.value, }#'pickup': pickup.value, 'destination': dest.value}perty
+			results_dict[str(id)] = inner_dict
 
 
-		print(user_name_dict)
-		# print(author_dict)
+		for row in phone_ids:
+			id = row.id
+			user_name = session.execute(value_select_statement, (id, 'name'))[0]
+			# dest = session.execute(value_select_statement, (id, 'destination'))[0]
+			# pickup = session.execute(value_select_statement, (id, 'pickup'))[0]
+			inner_dict = {'name': user_name.value, }#'pickup': pickup.value, 'destination': dest.value}perty
+			results_dict[str(id)] = inner_dict
 
-		return render_template('search_cass.html', posting=True, query=query, user_name_results=user_name_dict) #, author_results=author_dict)  
+
+		for row in driver_name_ids:
+			id = row.id
+			user_name = session.execute(value_select_statement, (id, 'name'))[0]
+			# dest = session.execute(value_select_statement, (id, 'destination'))[0]
+			# pickup = session.execute(value_select_statement, (id, 'pickup'))[0]
+			inner_dict = {'name': user_name.value, }#'pickup': pickup.value, 'destination': dest.value}perty
+			results_dict[str(id)] = inner_dict
+		print(results_dict)
+
+		return render_template('search_cass.html', posting=True, query=query, results=results_dict)#, dest_results=pickup_dict)
 
 	else:
 		return render_template('search_cass.html', posting=False)
@@ -105,7 +131,6 @@ def unclaimed_rides():
 		# results = rides.find({'claimed':False})
 		select_results = session.execute("SELECT id, property, value FROM "+table_name)
 
-		count = 0
 		# Create dictionary of dictionary containing attributes related by id
 		results = {}
 		for attribute in select_results:			
