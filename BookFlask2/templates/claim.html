@@ -74,17 +74,23 @@
 
           	{% endfor %}
 
+
+            <!-- <a href = "/claim/{{id}}/"><button class="btn btn-primary btn-lg" type="submit">Claim Ride</button></a> -->
+            <form method="post" class="form" action="/claim/{{id}}/">
+              <input type="submit" value="Claim Ride">
+            </form>
+<!-- 
             <h1><b>Driver Information:</b></h1>
             <form method="post" class="form" action="/claim/{{id}}/">
               <input type="text" name="driver_name" placeholder="Name">
-    <!--           <input type="text" name="phone" placeholder="Phone Number">
+              <input type="text" name="phone" placeholder="Phone Number">
               <input type="text" name="pickup" placeholder="Pick Up Location">
               <input type="text" name="destination" placeholder="destination">
-     -->      <input type="submit" value="Submit">
+          <input type="submit" value="Submit">
             </form>
             <form method="post" class="form" action="/cancel_claim/{{result['name']}}/">
              <input type="submit" value="Cancel">
-            </form>
+            </form> -->
           
           {% endif %}
 

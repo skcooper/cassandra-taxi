@@ -10,12 +10,17 @@ session = cluster.connect('keyspace1')
 # session.row_factory = dict_factory
 
 table_name = "time_exp4"
+driver_table_name = "time_exp5"
 
 session.execute("CREATE TABLE IF NOT EXISTS %s(id uuid, property text, value text, primary key(id, property));"%table_name)
 
 session.execute("CREATE INDEX IF NOT EXISTS on %s(value);"%table_name)
 
-# Add single driver: has name and array of 
+session.execute("CREATE TABLE IF NOT EXISTS %s(id uuid, name text, car text, phone text, rate text, rides list<uuid>, primary key(id));"%driver_table_name)
+
+#Add first (and so far, only) driver
+driver_id = uuid.uuid4()
+session.execute("INSERT INTO "+driver_table_name+"(id, name, car, phone, rate) values("+str(driver_id)+", 'driver1', 'car1', '800-800-8001', '20')")
 
 #Homepage
 @app.route('/')
@@ -155,15 +160,18 @@ def unclaimed_rides():
 		return render_template('unclaimed_rides.html', posting=False, result=results)
 
 
+
 @app.route('/claim/<id>/', methods=['GET', 'POST'])
 def claim(id):	
 	id = uuid.UUID(id)
 	# Claimed if has driver_name attribute
 	if request.method == 'POST' :
-		for key, value in request.form.iteritems() :
-			# #Only worried about new fields
-			session.execute("INSERT INTO "+table_name+"(id, property, value) values("+str(id)+", %s, %s)", (key, value))
-			# session.execute("UPDATE " + table_name + " SET value = %s WHERE id = %s AND property = %s", (value, id, key))
+		session.execute("INSERT INTO "+table_name+"(id, property, value) values(%s, 'driver_id', %s)", (str(id), str(driver_id))
+		session.execute("INSERT INTO "+table_name+"(id, property, value) values(%s, 'driver_name', %s)", (str(id), 'placeholder'))
+		# for key, value in request.form.iteritems() :
+		# 	# #Only worried about new fields
+		# 	session.execute("INSERT INTO "+table_name+"(id, property, value) values("+str(id)+", %s, %s)", (key, value))
+		# 	# session.execute("UPDATE " + table_name + " SET value = %s WHERE id = %s AND property = %s", (value, id, key))
 	result = {}
 	all_properties = session.execute("SELECT property, value FROM "+table_name+" WHERE id = %s", (id,)) 
 	for property in all_properties:
