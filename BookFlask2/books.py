@@ -35,14 +35,23 @@ def add():
 	if request.method == 'POST':
 		new_data = {k : v for k, v in request.form.items()}
 		#If the user leaves a field blank
-		if new_data['name'] == '' or new_data['phone'] == '' or new_data['pickup'] == '' or new_data['destination'] == '':
+		if new_data['name'] == '' or new_data['phone'] == '' or new_data['pickup'] == '' or new_data['destination'] == '' or new_data['time'] == '':
 			return render_template('add.html', alert="required")
 		else:
+			#Check to see if a ride with same name and time exists in database
+			select_results_name = session.execute("SELECT * FROM "+table_name+" WHERE property = 'name' AND value = %s", (new_data['name'],))
+			select_results_time = session.execute("SELECT * FROM "+table_name+" WHERE property = 'time' AND value = %s", (new_data['time'],))
+			for name in select_results_name:
+				for time in select_results_time:
+					if name.id == time.id:		
+						return render_template('add.html', alert = "exists")
+
 			#wrap in transaction?
 			id = uuid.uuid4()
 			insert_statement = "INSERT INTO "+table_name+"(id, property, value) values("+str(id)+", %s, %s)"
 			session.execute(insert_statement, ('name', new_data['name']))	
 			session.execute(insert_statement, ('phone', new_data['phone']))	
+			session.execute(insert_statement, ('time', new_data['time']))	
 			session.execute(insert_statement, ('pickup', new_data['pickup']))	
 			session.execute(insert_statement, ('destination', new_data['destination']))			
 			return render_template('add.html', alert = "success")
@@ -168,15 +177,12 @@ def claim(id):
 	id = uuid.UUID(id)
 	# Claimed if has driver_name attribute
 	if request.method == 'POST' :
-		#Wrap up in transaction
-			#Add driver info to rider
-			session.execute("INSERT INTO "+table_name+"(id, property, value) values(%s, 'driver_id', %s)", (id, str(driver_id)))
-			session.execute("INSERT INTO "+table_name+"(id, property, value) values(%s, 'driver_name', %s)", (id, 'placeholder'))
-
-			###Possible pause location
-
-			#Add rider info to driver
-			session.execute("UPDATE "+driver_table_name+" SET rides = rides + [%s] WHERE id = %s;", (id, str(driver_id)))
+		#Wrap up in batch: now atomic, but how to make isolated? Only row-level currently
+		session.execute("BEGIN BATCH \
+			INSERT INTO "+table_name+"(id, property, value) values(%s, 'driver_id', %s); \
+			INSERT INTO "+table_name+"(id, property, value) values(%s, 'driver_name', %s); \
+			UPDATE "+driver_table_name+" SET rides = rides + [%s] WHERE id = %s; \
+			APPLY BATCH;", (id, str(driver_id), id, 'placeholder', id, str(driver_id)))
 
 		# for key, value in request.form.iteritems() :
 		# 	# #Only worried about new fields

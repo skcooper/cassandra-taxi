@@ -33,14 +33,14 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="/">Book Search</a>
+          <a class="navbar-brand" href="/">Taxi Search</a>
         </div>
         <div class="navbar-collapse collapse">
           <ul class="nav navbar-nav">
            <li class= "active"><a href="/">Home</a></li>
            <li class= "active"><a href="/search/">Search</a></li>
            <li class= "active"><a href="/add/">Add</a></li>
-           <li class= "active"><a href="/featured/">Featured</a></li>
+           <li class= "active"><a href="/unclaimed_rides/">Claim Ride</a></li>
           </ul>
         </div><!--/.navbar-collapse -->
       </div>
@@ -48,10 +48,10 @@
      
 
     <!-- Main jumbotron for a primary marketing message or call to action -->
-    <div class="jumbotron">
+    <div class="jumbotron" style="background-image: url(/images/taxi.jpg); background-position: 50% 40%">
       <div class="container">
        <div class="row">
-        <h1>Add a Book to the Database:</h1>
+        <h1>Add a Ride to the Database:</h1>
        </div>
        <div class="row">
         <div class="well well-sm">
@@ -59,7 +59,8 @@
          <input type="text" name="name" placeholder="Name">
          <input type="text" name="phone" placeholder="Phone Number">
          <input type="text" name="pickup" placeholder="Pick Up Location">
-         <input type="text" name="destination" placeholder="destination">
+         <input type="text" name="destination" placeholder="Destination">
+         <input type="text" name="time" placeholder="Time">
          <input type="submit" value="Submit">
         <form>
        </div>
@@ -68,7 +69,7 @@
         You have successfully added to the database</div>
        {% elif alert == "exists" %}
        <div class ="alert alert-danger role="alert">
-        A book with that title and author already exists in the database
+        A ride with that name and that time already exists in the database
         </div>
         {% elif alert == "required" %}
        <div class ="alert alert-danger" role="alert">
